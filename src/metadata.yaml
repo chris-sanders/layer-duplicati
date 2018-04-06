@@ -1,0 +1,21 @@
+name: duplicati
+summary: duplicati backup
+maintainer: Chris Sanders <sanders.chris@gmail.com>
+description: |
+  Duplicati backup server with reverse-proxy interface support
+tags:
+  # Replace "misc" with one or more whitelisted tags from this list:
+  # https://jujucharms.com/docs/stable/authors-charm-metadata
+  - misc
+subordinate: false
+series:
+  - xenial
+# provides:
+#   provides-relation:
+#     interface: interface-name
+requires:
+  reverseproxy:
+    interface: reverseproxy
+# peers:
+#   peer-relation:
+#     interface: interface-name

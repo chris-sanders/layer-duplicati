@@ -1,0 +1,29 @@
+options:
+  release-url:
+    type: string
+    default: "https://github.com/duplicati/duplicati/releases/download/v2.0.3.3-2.0.3.3_beta_2018-04-02/duplicati_2.0.3.3-1_all.deb"
+    description: "URL to the release to install, only used during initial install"
+  port:
+    type: int
+    default: 8200
+    description: "Port duplicati is running on, the charm will not set this but needs to know for reverse proxy setup"
+  remote-access:
+    type: boolean
+    default: True
+    description: "Allow remote access"
+  proxy-port:
+    type: int
+    default: 443
+    description: "Port to request for reverse proxy access"
+  proxy-domain:
+    type: string
+    default: "duplicati"
+    description: "Subdomain to request from reverse proxy"
+  proxy-url:
+    type: string
+    default: "/duplicati"
+    description: 'Urlbase for revrse proxy, must start with a "/"'
+  proxy-group:
+    type: string
+    default: "duplicati"
+    description: "The name of the backend this charm will use, this should be unique for deployment/reverseproxy. Duplicati is not designed to be run in HA with multiple units grouped" 
