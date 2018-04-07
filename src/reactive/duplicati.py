@@ -3,7 +3,7 @@ import socket
 import subprocess
 import urllib.request
 
-from charms.reactive import when, when_not, set_state, when_all
+from charms.reactive import when_not, set_state, when_all
 from charmhelpers import fetch
 from charmhelpers.core import hookenv
 from libdup import DuplicatiHelper
@@ -43,11 +43,12 @@ def install_duplicati():
     subprocess.check_call(['systemctl', 'enable', dh.service])
     dh.write_config()
     hookenv.status_set('active', 'Duplicati is ready')
+    hookenv.open_port(dh.charm_config['port'])
     set_state('duplicati.installed')
 
 
-@when('config.changed.port')
-@when('config.changed.remote-access')
+@when_all('config.changed.port', 'duplicati.installed')
+@when_all('config.changed.remote-access', 'duplicati.installed')
 def update_config():
     dh.write_config()
 
