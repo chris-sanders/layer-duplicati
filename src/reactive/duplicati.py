@@ -59,6 +59,7 @@ def configure_reverseproxy(reverseproxy, *args):
     hookenv.log("Setting up reverseproxy", "INFO")
     proxy_info = {'urlbase': dh.charm_config['proxy-url'],
                   'subdomain': dh.charm_config['proxy-domain'],
+                  'rewrite-path': True,  # Duplicati doesn't handle urlbase
                   'group_id': dh.charm_config['proxy-group'],
                   'external_port': dh.charm_config['proxy-port'],
                   'internal_host': socket.getfqdn(),
