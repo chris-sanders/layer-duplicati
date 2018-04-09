@@ -59,7 +59,7 @@ class TestHaproxy():
         # assert page.status_code == 503
         deploy.relate('duplicati:reverseproxy', 'haproxy:reverseproxy')
         time.sleep(10)
-        page = requests.get('https://{}:{}/duplicati'.format(haproxy.info['public-address'], 80))
+        page = requests.get('http://{}:{}/duplicati'.format(haproxy.info['public-address'], 80))
         assert page.status_code == 200
     # def test_right_login(self, deploy, unit):
     #     # Correct log/pass connects
