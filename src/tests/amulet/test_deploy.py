@@ -13,8 +13,7 @@ def deploy():
     deploy.expose('haproxy')
     deploy.add('duplicati')
     deploy.configure('duplicati', {'proxy-port': 80})
-    deploy.setup(timeout=900)
-    deploy.sentry.wait()
+    deploy.setup(timeout=1000)
     return deploy
 
 
@@ -28,22 +27,11 @@ def duplicati(deploy):
     return deploy.sentry['duplicati'][0]
 
 
-# @pytest.fixture()
-# def nostats(deploy):
-#     print("Disabling stats")
-#     deploy.configure('haproxy', {'enable-stats': False})
-#     time.sleep(10)
-#     yield
-#     print("Re-enabling stats")
-#     deploy.configure('haproxy', {'enable-stats': True})
-#     time.sleep(10)
-
-
 class TestHaproxy():
 
     def test_deploy(self, deploy):
         try:
-            deploy.sentry.wait(timeout=900)
+            deploy.sentry.wait(timeout=1000)
         except amulet.TimeoutError:
             raise
 
@@ -61,21 +49,7 @@ class TestHaproxy():
         time.sleep(10)
         page = requests.get('http://{}:{}/duplicati'.format(haproxy.info['public-address'], 80))
         assert page.status_code == 200
-    # def test_right_login(self, deploy, unit):
-    #     # Correct log/pass connects
-    #     page = requests.get('http://{}:{}/{}'.format(unit.info['public-address'], 9000, 'ha-stats'),
-    #                         auth=requests.auth.HTTPBasicAuth('admin', 'admin'))
-    #     assert page.status_code == 200
 
-    # @pytest.mark.usefixtures("nostats")
-    # def test_disable_stats(self, deploy, unit):
-    #     # Disable stats prevents connection
-    #     with pytest.raises(requests.exceptions.ConnectionError):
-    #         page = requests.get('http://{}:{}/{}'.format(unit.info['public-address'], 9000, 'ha-stats'),
-    #                             auth=requests.auth.HTTPBasicAuth('admin', 'admin'),
-    #                             headers={'Cache-Control': 'no-cache'}
-    #                             )
-    #         print(page.json)
     #     # test we can access over http
     #     # page = requests.get('http://{}'.format(self.unit.info['public-address']))
     #     # self.assertEqual(page.status_code, 200)
