@@ -31,7 +31,7 @@ class TestHaproxy():
 
     def test_deploy(self, deploy):
         try:
-            deploy.sentry.wait(timeout=1000)
+            deploy.sentry.wait(timeout=1500)
         except amulet.TimeoutError:
             raise
 
