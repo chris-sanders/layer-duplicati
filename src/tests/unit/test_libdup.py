@@ -21,9 +21,8 @@ class TestLibDuplicati():
             assert 'DAEMON_OPTS="--webservice-port=8200 --webservice-interface=any"' in configs.read()
 
         # Check custom config
-        dh.charm_config['port']=8400
-        dh.charm_config['remote-access']=False
+        dh.charm_config['port'] = 8400
+        dh.charm_config['remote-access'] = False
         dh.write_config()
         with open(dh.config_file, 'r') as configs:
             assert 'DAEMON_OPTS="--webservice-port=8400"' in configs.read()
-

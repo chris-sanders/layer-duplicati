@@ -21,7 +21,7 @@ async def model():
 async def apps(model):
     apps = []
     for entry in series:
-        app = model.applications['duplicate-{}'.format(entry)]
+        app = model.applications['duplicati-{}'.format(entry)]
         apps.append(app)
     return apps
 
@@ -37,21 +37,21 @@ async def units(apps):
 @pytest.mark.parametrize('series', series)
 async def test_duplicate_deploy(model, series):
     # Starts a deploy for each series
-    await model.deploy('{}/builds/duplicate'.format(juju_repository),
+    await model.deploy('{}/builds/duplicati'.format(juju_repository),
                        series=series,
-                       application_name='duplicate-{}'.format(series))
+                       application_name='duplicati-{}'.format(series))
     assert True
 
 
-async def test_duplicate_status(apps, model):
+async def test_duplicati_status(apps, model):
     # Verifies status for all deployed series of the charm
     for app in apps:
         await model.block_until(lambda: app.status == 'active')
     assert True
 
 
-async def test_example_action(units):
-    for unit in units:
-        action = await unit.run_action('example-action')
-        action = await action.wait()
-        assert action.status == 'completed'
+# async def test_example_action(units):
+#     for unit in units:
+#         action = await unit.run_action('example-action')
+#         action = await action.wait()
+#         assert action.status == 'completed'

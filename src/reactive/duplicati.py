@@ -24,7 +24,7 @@ def install_duplicati():
     try:
         os.mkdir(filepath)
     except OSError as e:
-        if e.errno is 17:
+        if e.errno == 17:
             pass
 
     # Parse the filename
@@ -67,4 +67,3 @@ def configure_reverseproxy(reverseproxy, *args):
                   'internal_port': dh.charm_config['port']
                   }
     reverseproxy.configure(proxy_info)
-
