@@ -1,4 +1,6 @@
 charmhelpers
 charms.reactive
 pytest
+pytest-cov
 mock
+PyGithub>=1.43.5

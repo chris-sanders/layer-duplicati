@@ -14,7 +14,7 @@ dh = DuplicatiHelper()
 @when_not('duplicati.installed')
 def install_duplicati():
     hookenv.status_set('maintenance', 'installing mono')
-    fetch.add_source("deb http://download.mono-project.com/repo/ubuntu xenial main",
+    fetch.add_source("deb http://download.mono-project.com/repo/ubuntu stable-{series} main",
                      key="3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF")
     fetch.apt_update()
     fetch.apt_install('mono-devel')
@@ -24,11 +24,11 @@ def install_duplicati():
     try:
         os.mkdir(filepath)
     except OSError as e:
-        if e.errno is 17:
+        if e.errno == 17:
             pass
 
-    # Parse the filename
-    download_url = dh.charm_config['release-url']
+    # Download release
+    download_url = dh.get_release_url()
     filename = download_url.split('/')[-1]
     fullpath = os.path.join(filepath, filename)
     if not os.path.isfile(fullpath):
@@ -67,4 +67,3 @@ def configure_reverseproxy(reverseproxy, *args):
                   'internal_port': dh.charm_config['port']
                   }
     reverseproxy.configure(proxy_info)
-

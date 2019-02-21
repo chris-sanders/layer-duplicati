@@ -12,13 +12,6 @@ def mock_layers():
     sys.modules["reactive"] = mock.Mock()
 
 
-# @pytest.fixture
-# def mock_check_call(monkeypatch):
-#     mock_call = mock.Mock()
-#     monkeypatch.setattr('libdup.subprocess.check_call', mock_call)
-#     return mock_call
-
-
 @pytest.fixture
 def mock_hookenv_config(monkeypatch):
     import yaml
@@ -37,7 +30,23 @@ def mock_hookenv_config(monkeypatch):
 
 
 @pytest.fixture
-def dh(tmpdir, mock_layers, mock_hookenv_config, monkeypatch):
+def mock_github(monkeypatch):
+    asset = mock.Mock()
+    asset.name = 'Test-Asset-Name.deb'
+    asset.browser_download_url = 'Test-Download-URL'
+    release = mock.Mock()
+    release.title = 'Test-Release-Title'
+    release.get_assets.return_value = [asset, ]
+    repo = mock.Mock()
+    repo.get_releases.return_value = [release, ]
+    github = mock.Mock()
+    github.get_repo = mock.Mock(return_value=repo)
+    monkeypatch.setattr('libdup.Github', mock.Mock(return_value=github))
+
+
+@pytest.fixture
+def dh(tmpdir, mock_layers, mock_hookenv_config, monkeypatch,
+       mock_github):
     from libdup import DuplicatiHelper
     dh = DuplicatiHelper()
 

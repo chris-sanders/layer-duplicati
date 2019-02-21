@@ -1,8 +1,4 @@
 options:
-  release-url:
-    type: string
-    default: "https://github.com/duplicati/duplicati/releases/download/v2.0.3.3-2.0.3.3_beta_2018-04-02/duplicati_2.0.3.3-1_all.deb"
-    description: "URL to the release to install, only used during initial install"
   port:
     type: int
     default: 8200
