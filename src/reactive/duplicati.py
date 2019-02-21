@@ -14,7 +14,7 @@ dh = DuplicatiHelper()
 @when_not('duplicati.installed')
 def install_duplicati():
     hookenv.status_set('maintenance', 'installing mono')
-    fetch.add_source("deb http://download.mono-project.com/repo/ubuntu xenial main",
+    fetch.add_source("deb http://download.mono-project.com/repo/ubuntu stable-{series} main",
                      key="3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF")
     fetch.apt_update()
     fetch.apt_install('mono-devel')
