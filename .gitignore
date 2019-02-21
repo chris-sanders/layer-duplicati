@@ -4,4 +4,5 @@
 *.swp
 *.pyc
 src/.coverage
+src/repo-info
 VERSION

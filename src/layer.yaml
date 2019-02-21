@@ -1,8 +1,7 @@
 includes:
   - layer:basic
   - layer:version
-  - layer:reverseproxy
 options:
   version:
     file_name: "repo-info"
- repo: git@github.com:chris-sanders/layer-duplicati.git
+repo: git@github.com:chris-sanders/layer-duplicati.git
