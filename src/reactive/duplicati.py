@@ -27,8 +27,8 @@ def install_duplicati():
         if e.errno == 17:
             pass
 
-    # Parse the filename
-    download_url = dh.charm_config['release-url']
+    # Download release
+    download_url = dh.get_release_url()
     filename = download_url.split('/')[-1]
     fullpath = os.path.join(filepath, filename)
     if not os.path.isfile(fullpath):
