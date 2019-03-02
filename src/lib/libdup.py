@@ -4,6 +4,7 @@ from charmhelpers.core import (
     hookenv,
     host,
 )
+from github import Github
 
 
 class DuplicatiHelper():
@@ -22,3 +23,19 @@ class DuplicatiHelper():
                 line = 'DAEMON_OPTS="{}"'.format(' '.join(options))
             print(line, end='')
         host.service_restart(self.service)
+
+    def get_release_url(self):
+        github = Github()
+        releases = github.get_repo('duplicati/duplicati').get_releases()
+
+        latest_release = None
+        for release in releases:
+            if 'canary' not in release.title:
+                latest_release = release
+                break
+        if not latest_release:
+            return None
+        for asset in latest_release.get_assets():
+            if asset.name.endswith('.deb'):
+                return asset.browser_download_url
+        return None

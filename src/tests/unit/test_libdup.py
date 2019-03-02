@@ -26,3 +26,10 @@ class TestLibDuplicati():
         dh.write_config()
         with open(dh.config_file, 'r') as configs:
             assert 'DAEMON_OPTS="--webservice-port=8400"' in configs.read()
+
+    def test_get_release_url(self, dh):
+        download_url = dh.get_release_url()
+        print(download_url)
+        assert download_url.startswith('https://github.com/duplicati/duplicati/releases/download/')
+        assert download_url.endswith('.deb')
+        assert 'canary' not in download_url
