@@ -50,3 +50,21 @@ def test_action_backup(dh, mock_check_output):
                      '--accept-all-keys',
                      '--my-other-option']
     mock_check_output.assert_called_with(expected_args, stderr=-2)
+
+
+def test_action_restore(dh, mock_check_output):
+    dh.charm_config['passphrase'] = 'passphrase'
+    dh.charm_config['storage-url'] = 'ssh://test:test@127.0.0.1/backup'
+    dh.charm_config['source-path'] = '/test1,/test2,/test3'
+    dh.charm_config['options'] = '--accept-all-keys,--my-other-option'
+    dh.restore()
+    expected_args = ['/usr/bin/duplicati-cli',
+                     'restore',
+                     'ssh://test:test@127.0.0.1/backup',
+                     '/test1',
+                     '/test2',
+                     '/test3',
+                     '--passphrase=passphrase',
+                     '--accept-all-keys',
+                     '--my-other-option']
+    mock_check_output.assert_called_with(expected_args, stderr=-2)

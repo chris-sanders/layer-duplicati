@@ -59,3 +59,22 @@ class DuplicatiHelper():
         if "Backup completed successfully" in output.decode('utf8'):
             return True
         return False
+
+    def restore(self):
+        cmd = [self.cli,
+               'restore',
+               self.charm_config['storage-url']]
+        cmd.extend([path for path in self.charm_config['source-path'].split(',')])
+        if self.charm_config['passphrase']:
+            cmd.append('--passphrase={}'.format(self.charm_config['passphrase']))
+        else:
+            cmd.append('--no-encryption')
+        cmd.extend([option for option in self.charm_config['options'].split(',')])
+        try:
+            output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError:
+            return False
+        if "Backup completed successfully" in output.decode('utf8'):
+            return True
+        return False
+
