@@ -9,6 +9,7 @@ tags:
   - misc
 subordinate: false
 series:
+  - bionic
   - xenial
 # provides:
 #   provides-relation:

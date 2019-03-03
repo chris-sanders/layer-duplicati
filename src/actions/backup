@@ -1,6 +1,6 @@
 #!/usr/local/sbin/charm-env python3
 
-from libdup import DuplicitiHelper
+from libdup import DuplicatiHelper
 from charmhelpers.core import hookenv
 
 dh = DuplicatiHelper()

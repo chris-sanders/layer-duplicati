@@ -47,7 +47,10 @@ class DuplicatiHelper():
                'backup',
                self.charm_config['storage-url']]
         cmd.extend([path for path in self.charm_config['source-path'].split(',')])
-        cmd.append('--passphrase={}'.format(self.charm_config['passphrase']))
+        if self.charm_config['passphrase']:
+            cmd.append('--passphrase={}'.format(self.charm_config['passphrase']))
+        else:
+            cmd.append('--no-encryption')
         cmd.extend([option for option in self.charm_config['options'].split(',')])
         try:
             subprocess.check_call(cmd, stderr=subprocess.STDOUT)
