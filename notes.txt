@@ -1,0 +1,5 @@
+Backup command:
+duplicati-cli backup ssh://sftpuser:testpass@10.0.100.15/tmp/backup ./ --passphrase=passphrase --ssh-accept-any-fingerprints
+
+Restore to original path:
+duplicati-cli restore ssh://sftpuser:testpass@10.0.100.15/tmp/backup "*" --passphrase=passphrase --ssh-accept-any-fingerprints

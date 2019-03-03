@@ -40,14 +40,34 @@ async def test_duplicate_deploy(model, series):
     await model.deploy('{}/builds/duplicati'.format(juju_repository),
                        series=series,
                        application_name='duplicati-{}'.format(series))
-    assert True
+
+
+async def test_sftp_deploy(model):
+    await model.deploy('cs:~chris.sanders/sftp-server',
+                       series='xenial',
+                       application_name='sftp-server',
+                       config={'sftp-config': 'sftpuser,/tmp:tmp;'}
+                       )
 
 
 async def test_duplicati_status(apps, model):
     # Verifies status for all deployed series of the charm
     for app in apps:
         await model.block_until(lambda: app.status == 'active')
-    assert True
+
+
+async def test_sftp_status(model):
+    sftp_server = model.applications['sftp-server']
+    await model.block_until(lambda: sftp_server.status == 'active')
+
+
+async def test_backup(model):
+    sftp_server = model.applications['sftp-server']
+    for unit in sftp_server.units:
+        action = await unit.run_action('set-password',
+                                       user='sftpuser',
+                                       password='testpass')
+        action = await action.wait()
 
 
 # async def test_example_action(units):
