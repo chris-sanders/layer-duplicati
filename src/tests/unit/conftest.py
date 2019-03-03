@@ -20,6 +20,14 @@ def mock_check_call(monkeypatch):
 
 
 @pytest.fixture
+def mock_check_output(monkeypatch):
+    mock_call = mock.Mock()
+    mock_call.return_value = b''
+    monkeypatch.setattr('libdup.subprocess.check_output', mock_call)
+    return mock_call
+
+
+@pytest.fixture
 def mock_hookenv_config(monkeypatch):
     import yaml
 
@@ -53,7 +61,7 @@ def mock_github(monkeypatch):
 
 @pytest.fixture
 def dh(tmpdir, mock_layers, mock_hookenv_config, monkeypatch,
-       mock_check_call, mock_github):
+       mock_check_call, mock_github, mock_check_output):
     from libdup import DuplicatiHelper
     dh = DuplicatiHelper()
 

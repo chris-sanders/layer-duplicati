@@ -53,7 +53,12 @@ class DuplicatiHelper():
             cmd.append('--no-encryption')
         cmd.extend([option for option in self.charm_config['options'].split(',')])
         try:
-            subprocess.check_call(cmd, stderr=subprocess.STDOUT)
+            # subprocess.check_call(cmd, stderr=subprocess.STDOUT)
+            output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError:
             return False
-        return True
+        if "Backup completed successfully" in output.decode('utf8'):
+            return True
+        print("DEBUGGING")
+        print(output.decode('utf8'))
+        return False

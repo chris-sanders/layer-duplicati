@@ -7,3 +7,5 @@ dh = DuplicatiHelper()
 
 if dh.backup():
     hookenv.action_set({'outcome': 'success'})
+else:
+    hookenv.action_set({'outcome': 'failed'})
