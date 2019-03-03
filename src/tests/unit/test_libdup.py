@@ -49,5 +49,4 @@ def test_action_backup(dh, mock_check_output):
                      '--passphrase=passphrase',
                      '--accept-all-keys',
                      '--my-other-option']
-    # mock_check_call.assert_called_with(expected_args, stderr=-2)
     mock_check_output.assert_called_with(expected_args, stderr=-2)
