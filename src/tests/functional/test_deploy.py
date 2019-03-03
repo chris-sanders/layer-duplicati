@@ -61,14 +61,25 @@ async def test_sftp_status(model):
     await model.block_until(lambda: sftp_server.status == 'active')
 
 
-async def test_backup(model):
+async def test_backup(model, apps, units):
     sftp_server = model.applications['sftp-server']
     for unit in sftp_server.units:
         action = await unit.run_action('set-password',
                                        user='sftpuser',
                                        password='testpass')
         action = await action.wait()
-
+    public_address = sftp_server.units[0].public_address
+    for app in apps:
+        config = {'storage-url': 'ssh://sftpuser:testpass@{}/tmp/{}'.format(public_address,
+                                                                            app.name),
+                  'source-path': '/home/ubuntu/',
+                  'options': '--ssh-accept-any-fingerprints',
+                  }
+        await app.set_config(config)
+    for unit in units:
+        action = await unit.run_action('backup')
+        action = await action.wait()
+        assert action.status == 'completed'
 
 # async def test_example_action(units):
 #     for unit in units:
