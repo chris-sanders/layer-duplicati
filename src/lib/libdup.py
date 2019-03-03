@@ -1,4 +1,5 @@
 import fileinput
+import subprocess
 
 from charmhelpers.core import (
     hookenv,
@@ -12,6 +13,7 @@ class DuplicatiHelper():
         self.charm_config = hookenv.config()
         self.config_file = "/etc/default/duplicati"
         self.service = 'duplicati.service'
+        self.cli = '/usr/bin/duplicati-cli'
 
     def write_config(self):
         options = []
@@ -39,3 +41,16 @@ class DuplicatiHelper():
             if asset.name.endswith('.deb'):
                 return asset.browser_download_url
         return None
+
+    def backup(self):
+        cmd = [self.cli,
+               'backup',
+               self.charm_config['storage-url']]
+        cmd.extend([path for path in self.charm_config['source-path'].split(',')])
+        cmd.append('--passphrase={}'.format(self.charm_config['passphrase']))
+        cmd.extend([option for option in self.charm_config['options'].split(',')])
+        try:
+            subprocess.check_call(cmd, stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError:
+            return False
+        return True

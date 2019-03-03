@@ -1,0 +1,9 @@
+#!/usr/local/sbin/charm-env python3
+
+from libdup import DuplicitiHelper
+from charmhelpers.core import hookenv
+
+dh = DuplicatiHelper()
+
+if dh.backup():
+    hookenv.action_set({'outcome': 'success'})
