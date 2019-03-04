@@ -8,7 +8,7 @@ pytestmark = pytest.mark.asyncio
 juju_repository = os.getenv('JUJU_REPOSITORY', '.').rstrip('/')
 series = ['xenial',
           'bionic',
-          pytest.param('cosmic', marks=pytest.mark.xfail(reason='canary')),
+          # pytest.param('cosmic', marks=pytest.mark.xfail(reason='canary')),
           ]
 sources = [('local', '{}/builds/duplicati'.format(juju_repository)),
            # ('jujucharms', 'cs:...'),
@@ -60,6 +60,14 @@ async def test_haproxy_deploy(model):
                        application_name='haproxy')
 
 
+async def test_sftp_deploy(model):
+    await model.deploy('cs:~chris.sanders/sftp-server',
+                       series='xenial',
+                       application_name='sftp-server',
+                       config={'sftp-config': 'sftpuser,/tmp:tmp;'}
+                       )
+
+
 async def test_charm_upgrade(model, app):
     if app.name.endswith('local'):
         pytest.skip("No need to upgrade the local deploy")
@@ -87,6 +95,11 @@ async def test_haproxy_status(model):
     await model.block_until(lambda: haproxy.status == 'active')
 
 
+async def test_sftp_status(model):
+    sftp_server = model.applications['sftp-server']
+    await model.block_until(lambda: sftp_server.status == 'active')
+
+
 async def test_add_reverse_proxy(model, app):
     haproxy = model.applications['haproxy']
     await app.set_config({'proxy-url': app.name,
@@ -94,3 +107,33 @@ async def test_add_reverse_proxy(model, app):
     await app.add_relation('reverseproxy', 'haproxy:reverseproxy')
     await model.block_until(lambda: haproxy.status == 'maintenance')
     await model.block_until(lambda: haproxy.status == 'active')
+
+
+async def test_backup(model, apps, units):
+    sftp_server = model.applications['sftp-server']
+    for unit in sftp_server.units:
+        action = await unit.run_action('set-password',
+                                       user='sftpuser',
+                                       password='testpass')
+        action = await action.wait()
+    public_address = sftp_server.units[0].public_address
+    for app in apps:
+        config = {'storage-url': 'ssh://sftpuser:testpass@{}/tmp/{}'.format(public_address,
+                                                                            app.name),
+                  'source-path': '/home/ubuntu/',
+                  'options': '--ssh-accept-any-fingerprints',
+                  }
+        await app.set_config(config)
+    for unit in units:
+        action = await unit.run_action('backup')
+        action = await action.wait()
+        assert action.status == 'completed'
+        assert action.results['outcome'] == 'success'
+
+
+async def test_restore(model, apps, units):
+    for unit in units:
+        action = await unit.run_action('restore')
+        action = await action.wait()
+        assert action.status == 'completed'
+        assert action.results['outcome'] == 'success'

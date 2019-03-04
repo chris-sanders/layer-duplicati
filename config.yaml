@@ -27,3 +27,19 @@ options:
     type: boolean
     default: True
     description: "Restrict proxy to private subnets"
+  storage-url:
+    type: string
+    default: ''
+    description: "Storage URL to backup to"
+  source-path:
+    type: string
+    default: ''
+    description: "Comma seperated list of paths to backup and restore"
+  passphrase:
+    type: string
+    default: ''
+    description: "Passpharse for encrypted backup"
+  options:
+    type: string
+    default: ''
+    description: "Comma seperated list of addtional options for the backup command"

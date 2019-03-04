@@ -1,4 +1,5 @@
 import fileinput
+import subprocess
 
 from charmhelpers.core import (
     hookenv,
@@ -12,6 +13,7 @@ class DuplicatiHelper():
         self.charm_config = hookenv.config()
         self.config_file = "/etc/default/duplicati"
         self.service = 'duplicati.service'
+        self.cli = '/usr/bin/duplicati-cli'
 
     def write_config(self):
         options = []
@@ -41,3 +43,41 @@ class DuplicatiHelper():
             if asset.name.endswith('.deb'):
                 return asset.browser_download_url
         return None
+
+    def backup(self):
+        cmd = [self.cli,
+               'backup',
+               self.charm_config['storage-url']]
+        cmd.extend([path for path in self.charm_config['source-path'].split(',')])
+        if self.charm_config['passphrase']:
+            cmd.append('--passphrase={}'.format(self.charm_config['passphrase']))
+        else:
+            cmd.append('--no-encryption')
+        cmd.extend([option for option in self.charm_config['options'].split(',')])
+        try:
+            output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+            hookenv.log(output)
+        except subprocess.CalledProcessError:
+            hookenv.log('Backup process failed')
+            return False
+        if "Backup completed successfully" in output.decode('utf8'):
+            return True
+        return False
+
+    def restore(self):
+        cmd = [self.cli,
+               'restore',
+               self.charm_config['storage-url']]
+        cmd.extend([path for path in self.charm_config['source-path'].split(',')])
+        if self.charm_config['passphrase']:
+            cmd.append('--passphrase={}'.format(self.charm_config['passphrase']))
+        else:
+            cmd.append('--no-encryption')
+        cmd.extend([option for option in self.charm_config['options'].split(',')])
+        try:
+            output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+            hookenv.log(output)
+        except subprocess.CalledProcessError:
+            hookenv.log('Restore process failed')
+            return False
+        return True
