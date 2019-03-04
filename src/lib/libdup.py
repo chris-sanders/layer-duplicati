@@ -54,7 +54,9 @@ class DuplicatiHelper():
         cmd.extend([option for option in self.charm_config['options'].split(',')])
         try:
             output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+            hookenv.log(output)
         except subprocess.CalledProcessError:
+            hookenv.log('Backup process failed')
             return False
         if "Backup completed successfully" in output.decode('utf8'):
             return True
@@ -72,9 +74,8 @@ class DuplicatiHelper():
         cmd.extend([option for option in self.charm_config['options'].split(',')])
         try:
             output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+            hookenv.log(output)
         except subprocess.CalledProcessError:
+            hookenv.log('Restore process failed')
             return False
-        if "Backup completed successfully" in output.decode('utf8'):
-            return True
-        return False
-
+        return True

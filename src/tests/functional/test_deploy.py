@@ -82,6 +82,15 @@ async def test_backup(model, apps, units):
         assert action.status == 'completed'
         assert action.results['outcome'] == 'success'
 
+
+async def test_restore(model, apps, units):
+    for unit in units:
+        action = await unit.run_action('restore')
+        action = await action.wait()
+        assert action.status == 'completed'
+        assert action.results['outcome'] == 'success'
+
+
 # async def test_example_action(units):
 #     for unit in units:
 #         action = await unit.run_action('example-action')
