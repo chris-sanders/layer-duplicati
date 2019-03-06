@@ -18,6 +18,8 @@ class DuplicatiHelper():
         options.append('--webservice-port={}'.format(self.charm_config['port']))
         if self.charm_config['remote-access']:
             options.append('--webservice-interface=any')
+        if hookenv.relation_ids('reverseproxy'):
+            options.append('--webservice-allowed-hostnames=*')
         for line in fileinput.input(self.config_file, inplace=True):
             if line.startswith("DAEMON_OPTS"):
                 line = 'DAEMON_OPTS="{}"'.format(' '.join(options))

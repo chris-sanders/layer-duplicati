@@ -1,6 +1,7 @@
 includes:
   - layer:basic
   - layer:version
+  - interface:reverseproxy
 options:
   version:
     file_name: "repo-info"

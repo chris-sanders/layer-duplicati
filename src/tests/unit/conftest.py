@@ -30,6 +30,11 @@ def mock_hookenv_config(monkeypatch):
 
 
 @pytest.fixture
+def mock_hookenv_relation_ids(monkeypatch):
+    monkeypatch.setattr('libdup.hookenv.relation_ids', mock.Mock(return_value=[]))
+
+
+@pytest.fixture
 def mock_github(monkeypatch):
     asset = mock.Mock()
     asset.name = 'Test-Asset-Name.deb'
@@ -46,7 +51,7 @@ def mock_github(monkeypatch):
 
 @pytest.fixture
 def dh(tmpdir, mock_layers, mock_hookenv_config, monkeypatch,
-       mock_github):
+       mock_github, mock_hookenv_relation_ids):
     from libdup import DuplicatiHelper
     dh = DuplicatiHelper()
 

@@ -3,7 +3,13 @@ import socket
 import subprocess
 import urllib.request
 
-from charms.reactive import when_not, set_state, when_all
+from charms.reactive import (
+    when_not,
+    set_state,
+    when_all,
+    when,
+    endpoint_from_name,
+)
 from charmhelpers import fetch
 from charmhelpers.core import hookenv
 from libdup import DuplicatiHelper
@@ -53,17 +59,18 @@ def update_config():
     dh.write_config()
 
 
-@when_all('reverseproxy.triggered', 'reverseproxy.ready')
-@when_not('reverseproxy.configured', 'reverseproxy.departed')
-def configure_reverseproxy(reverseproxy, *args):
+@when('reverseproxy.ready')
+@when_not('reverseproxy.configured')
+def configure_reverseproxy():
+    interface = endpoint_from_name('reverseproxy')
     hookenv.log("Setting up reverseproxy", "INFO")
     proxy_info = {'urlbase': dh.charm_config['proxy-url'],
                   'subdomain': dh.charm_config['proxy-domain'],
-                  'rewrite-path': True,  # Duplicati doesn't handle urlbase
+                  'rewrite-path': True,  # Duplicati doesn't handle urlbase?
                   'acl-local': dh.charm_config['proxy-private'],
-                  'group_id': dh.charm_config['proxy-group'],
                   'external_port': dh.charm_config['proxy-port'],
                   'internal_host': socket.getfqdn(),
                   'internal_port': dh.charm_config['port']
                   }
-    reverseproxy.configure(proxy_info)
+    interface.configure(proxy_info)
+    dh.write_config()  # Enable access by hostname

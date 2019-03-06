@@ -42,12 +42,25 @@ async def test_duplicate_deploy(model, series):
                        application_name='duplicati-{}'.format(series))
 
 
+async def test_haproxy_deploy(model):
+    await model.deploy('cs:~pirate-charmers/haproxy',
+                       series='xenial',
+                       application_name='haproxy')
+
+
 async def test_duplicati_status(apps, model):
     # Verifies status for all deployed series of the charm
     for app in apps:
         await model.block_until(lambda: app.status == 'active')
 
 
+async def test_haproxy_status(model):
+    haproxy = model.applications['haproxy']
+    await model.block_until(lambda: haproxy.status == 'active')
+
+
+# async def test_reverse_proxy(model):
+#     haproxy = model.applications['haproxy']
 # async def test_example_action(units):
 #     for unit in units:
 #         action = await unit.run_action('example-action')
