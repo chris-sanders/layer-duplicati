@@ -19,10 +19,10 @@ options:
     type: string
     default: "/duplicati"
     description: 'Urlbase for revrse proxy, must start with a "/"'
-  proxy-group:
-    type: string
-    default: "duplicati"
-    description: "The name of the backend this charm will use, this should be unique for deployment/reverseproxy. Duplicati is not designed to be run in HA with multiple units grouped" 
+# proxy-group:
+# prtype: string
+# prdefault: "duplicati"
+# prdescription: "The name of the backend this charm will use, this should be unique for deployment/reverseproxy. Duplicati is not designed to be run in HA with multiple units grouped" 
   proxy-private:
     type: boolean
     default: True

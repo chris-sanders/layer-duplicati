@@ -29,7 +29,7 @@ unittest:
 	@cd src && tox -e unit
 
 functional: build
-	@cd src && tox -e functional
+	@cd src && PYTEST_KEEP_MODEL=$(PYTEST_KEEP_MODEL) tox -e functional
 
 build:
 	@echo "Building charm to base directory $(JUJU_REPOSITORY)"
