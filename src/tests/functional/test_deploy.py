@@ -40,14 +40,6 @@ async def app(model, series, source):
     return model.applications['duplicati-{}-{}'.format(series, source[0])]
 
 
-# @pytest.fixture
-# async def units(apps):
-#     units = []
-#     for app in apps:
-#         units.extend(app.units)
-#     return units
-
-
 async def test_duplicate_deploy(model, series, source):
     # Starts a deploy for each series and source
     await model.deploy(source[1],
@@ -66,8 +58,10 @@ async def test_haproxy_deploy(model):
 async def test_charm_upgrade(model, app):
     if app.name.endswith('local'):
         pytest.skip("No need to upgrade the local deploy")
-    await model.block_until(lambda: app.status == 'active')
-    # await app.upgrade_charm(switch=sources[0][1])
+    # await model.block_until(lambda: app.status == 'active')
+    unit = app.units[0]
+    await model.block_until(lambda: unit.agent_status == 'idle')
+    # await app.upgrade_charm(switch=sources[0][1]) # Not Implemented yet
     subprocess.check_call(['juju',
                            'upgrade-charm',
                            '--switch={}'.format(sources[0][1]),
