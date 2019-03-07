@@ -8,8 +8,8 @@ pytestmark = pytest.mark.asyncio
 
 juju_repository = os.getenv('JUJU_REPOSITORY', '.').rstrip('/')
 series = ['xenial',
-          # 'bionic',
-          # pytest.param('cosmic', marks=pytest.mark.xfail(reason='canary')),
+          'bionic',
+          pytest.param('cosmic', marks=pytest.mark.xfail(reason='canary')),
           ]
 sources = [('local', '{}/builds/duplicati'.format(juju_repository)),
            ('jujucharms', 'cs:~chris.sanders/duplicati'),
@@ -71,9 +71,12 @@ async def test_charm_upgrade(model, app):
     subprocess.check_call(['juju',
                            'upgrade-charm',
                            '--switch={}'.format(sources[0][1]),
-                           '-m {}'.format(model.info.name),
+                           '-m', model.info.name,
                            app.name,
-                           ], shell=True)
+                           ])
+    unit = app.units[0]
+    await model.block_until(lambda: unit.agent_status == 'executing')
+    await model.block_until(lambda: unit.agent_status == 'idle')
 
 
 async def test_duplicati_status(app, model):
@@ -88,7 +91,8 @@ async def test_haproxy_status(model):
 
 async def test_add_reverse_proxy(model, app):
     haproxy = model.applications['haproxy']
-    await app.set_config({'proxy-url': app.name})
+    await app.set_config({'proxy-url': app.name,
+                          'proxy-port': '80'})
     await app.add_relation('reverseproxy', 'haproxy:reverseproxy')
     await model.block_until(lambda: haproxy.status == 'maintenance')
     await model.block_until(lambda: haproxy.status == 'active')
