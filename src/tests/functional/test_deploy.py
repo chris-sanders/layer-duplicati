@@ -42,11 +42,18 @@ async def app(model, series, source):
 
 async def test_duplicate_deploy(model, series, source):
     # Starts a deploy for each series and source
-    await model.deploy(source[1],
-                       series=series,
-                       application_name='duplicati-{}-{}'.format(series,
-                                                                 source[0],
-                                                                 ))
+    subprocess.check_call(['juju',
+                           'deploy',
+                           source[1],
+                           '-m', model.info.name,
+                           'duplicati-{}-{}'.format(series, source[0]),
+                           ])
+
+    # await model.deploy(source[1],
+    #                    series=series,
+    #                    application_name='duplicati-{}-{}'.format(series,
+    #                                                              source[0],
+    #                                                              ))
 
 
 async def test_haproxy_deploy(model):

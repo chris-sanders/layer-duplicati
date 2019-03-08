@@ -14,6 +14,7 @@ import json
 import os
 import uuid
 import pytest
+import subprocess
 import juju
 from juju.controller import Controller
 from juju.errors import JujuError
@@ -61,7 +62,12 @@ async def controller():
 async def model(controller):  # pylint: disable=redefined-outer-name
     '''This model lives only for the duration of the test'''
     model_name = "functest-{}".format(uuid.uuid4())
-    _model = await controller.add_model(model_name)
+    _model = await controller.add_model(model_name, cloud_name='google',
+                                        region='us-east1')
+    # https://github.com/juju/python-libjuju/issues/267
+    subprocess.check_call(['juju', 'models'])
+    while model_name not in await controller.list_models():
+        await asyncio.sleep(1)
     yield _model
     await _model.disconnect()
     if not os.getenv('PYTEST_KEEP_MODEL'):
