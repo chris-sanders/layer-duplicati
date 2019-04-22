@@ -65,6 +65,8 @@ def test_action_restore(dh, mock_check_output):
                      '/test2',
                      '/test3',
                      '--passphrase=passphrase',
+                     '--overwrite=true',
+                     '--restore-permissions',
                      '--accept-all-keys',
                      '--my-other-option']
     mock_check_output.assert_called_with(expected_args, stderr=-2)

@@ -57,8 +57,12 @@ class DuplicatiHelper():
         try:
             output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
             hookenv.log(output)
-        except subprocess.CalledProcessError:
+        except subprocess.CalledProcessError as ex:
+            if "Backup completed successfully" in output.decode('utf8'):
+                return True  # Return code 0 on success with no changes
             hookenv.log('Backup process failed')
+            hookenv.log('Backup command:{}'.format(cmd))
+            hookenv.log(ex.output.decode('utf8'))
             return False
         if "Backup completed successfully" in output.decode('utf8'):
             return True
@@ -73,11 +77,14 @@ class DuplicatiHelper():
             cmd.append('--passphrase={}'.format(self.charm_config['passphrase']))
         else:
             cmd.append('--no-encryption')
+        cmd.append('--overwrite=true')
+        cmd.append('--restore-permissions')
         cmd.extend([option for option in self.charm_config['options'].split(',')])
         try:
             output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
             hookenv.log(output)
-        except subprocess.CalledProcessError:
+        except subprocess.CalledProcessError as ex:
             hookenv.log('Restore process failed')
+            hookenv.log(ex.output.decode('utf8'))
             return False
         return True

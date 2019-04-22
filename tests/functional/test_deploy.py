@@ -1,6 +1,7 @@
 import os
 import pytest
 import subprocess
+# import stat
 
 # Treat all tests as coroutines
 pytestmark = pytest.mark.asyncio
@@ -109,31 +110,52 @@ async def test_add_reverse_proxy(model, app):
     await model.block_until(lambda: haproxy.status == 'active')
 
 
-async def test_backup(model, apps, units):
+async def test_backup(model, app, jujutools):
+    # Setup sftp to backup to
     sftp_server = model.applications['sftp-server']
-    for unit in sftp_server.units:
-        action = await unit.run_action('set-password',
-                                       user='sftpuser',
-                                       password='testpass')
-        action = await action.wait()
+    action = await sftp_server.units[0].run_action('set-password',
+                                                   user='sftpuser',
+                                                   password='testpass')
+    action = await action.wait()
+    # Configure application to backup to this server
     public_address = sftp_server.units[0].public_address
-    for app in apps:
-        config = {'storage-url': 'ssh://sftpuser:testpass@{}/tmp/{}'.format(public_address,
-                                                                            app.name),
-                  'source-path': '/home/ubuntu/',
-                  'options': '--ssh-accept-any-fingerprints',
-                  }
-        await app.set_config(config)
-    for unit in units:
-        action = await unit.run_action('backup')
-        action = await action.wait()
-        assert action.status == 'completed'
-        assert action.results['outcome'] == 'success'
+    destination_folder = '/tmp/{}'.format(app.name)
+    config = {'storage-url': 'ssh://sftpuser:testpass@{}{}'.format(public_address,
+                                                                   destination_folder),
+              'source-path': '/home/ubuntu/',
+              'options': '--ssh-accept-any-fingerprints',
+              }
+    await app.set_config(config)
+    # Create a file to test against
+    results = await jujutools.run_command('echo "Original File" > /home/ubuntu/testfile',
+                                          app.units[0])
+    assert results['Code'] == '0'
+    # Run the backup
+    action = await app.units[0].run_action('backup')
+    action = await action.wait()
+    assert action.status == 'completed'
+    assert action.results['outcome'] == 'success'
+    # Verify files are present on destination
+    path = 'glob.glob("{}/*.dlist.zip")[0]'.format(destination_folder)
+    fstat = await jujutools.file_stat(path, sftp_server.units[0], glob=True)
+    assert fstat.st_uid == 1001
+    assert fstat.st_gid == 1001
 
 
-async def test_restore(model, apps, units):
-    for unit in units:
-        action = await unit.run_action('restore')
-        action = await action.wait()
-        assert action.status == 'completed'
-        assert action.results['outcome'] == 'success'
+async def test_restore(model, app, jujutools):
+    # This was created during the backup test
+    contents = await jujutools.file_contents('/home/ubuntu/testfile', app.units[0])
+    assert "Original File" in contents
+    # Modify the file
+    results = await jujutools.run_command('echo "Modified File" > /home/ubuntu/testfile',
+                                          app.units[0])
+    assert results['Code'] == '0'
+    contents = await jujutools.file_contents('/home/ubuntu/testfile', app.units[0])
+    assert "Modified File" in contents
+    # Restore the file
+    action = await app.units[0].run_action('restore')
+    action = await action.wait()
+    assert action.status == 'completed'
+    assert action.results['outcome'] == 'success'
+    contents = await jujutools.file_contents('/home/ubuntu/testfile', app.units[0])
+    assert "Original File" in contents

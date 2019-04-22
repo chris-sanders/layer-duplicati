@@ -23,7 +23,8 @@ def install_duplicati():
     fetch.add_source("deb http://download.mono-project.com/repo/ubuntu stable-{series} main",
                      key="3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF")
     fetch.apt_update()
-    fetch.apt_install('mono-devel')
+    # fetch.apt_install('mono-devel')
+    fetch.apt_install('mono-runtime')
 
     # Create deb directory
     filepath = './debs'

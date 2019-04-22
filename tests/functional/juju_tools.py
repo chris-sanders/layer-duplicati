@@ -41,18 +41,25 @@ class JujuTools:
                       .format(imports, remote_cmd))
         cmd = python3.format(python_cmd)
         results = await self.run_command(cmd, target)
+        print("Stdout: " + results['Stdout'])
         return pickle.loads(base64.b64decode(bytes(results['Stdout'][2:-1], 'utf8')))
 
-    async def file_stat(self, path, target):
+    async def file_stat(self, path, target, glob=False):
         '''
         Runs stat on a file
 
         :param path: File path
         :param target: Unit object or unit name string
         '''
-        imports = 'import os;'
-        python_cmd = ('os.stat("{}")'
-                      .format(path))
+        imports = ('import os;'
+                   'import glob;'
+                   )
+        if glob:
+            python_cmd = ('os.stat({})'
+                          .format(path))
+        else:
+            python_cmd = ('os.stat("{}")'
+                          .format(path))
         print("Calling remote cmd: " + python_cmd)
         return await self.remote_object(imports, python_cmd, target)
 
