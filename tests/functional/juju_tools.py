@@ -22,6 +22,7 @@ class JujuTools:
             if isinstance(target, juju.unit.Unit)
             else await self.get_unit(target)
         )
+        print("Running cmd: " + cmd)
         action = await unit.run(cmd)
         return action.results
 
@@ -42,6 +43,7 @@ class JujuTools:
         cmd = python3.format(python_cmd)
         results = await self.run_command(cmd, target)
         print("Stdout: " + results['Stdout'])
+        print("Results: {}".format(results))
         return pickle.loads(base64.b64decode(bytes(results['Stdout'][2:-1], 'utf8')))
 
     async def file_stat(self, path, target, glob=False):

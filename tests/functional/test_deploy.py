@@ -117,6 +117,7 @@ async def test_backup(model, app, jujutools):
                                                    user='sftpuser',
                                                    password='testpass')
     action = await action.wait()
+
     # Configure application to backup to this server
     public_address = sftp_server.units[0].public_address
     destination_folder = '/tmp/{}'.format(app.name)
@@ -126,32 +127,74 @@ async def test_backup(model, app, jujutools):
               'options': '--ssh-accept-any-fingerprints',
               }
     await app.set_config(config)
+
     # Create a file to test against
     results = await jujutools.run_command('echo "Original File" > /home/ubuntu/testfile',
                                           app.units[0])
     assert results['Code'] == '0'
+
     # Run the backup
     action = await app.units[0].run_action('backup')
     action = await action.wait()
     assert action.status == 'completed'
     assert action.results['outcome'] == 'success'
+
     # Verify files are present on destination
-    path = 'glob.glob("{}/*.dlist.zip")[0]'.format(destination_folder)
-    fstat = await jujutools.file_stat(path, sftp_server.units[0], glob=True)
-    assert fstat.st_uid == 1001
-    assert fstat.st_gid == 1001
+    cmd = 'glob.glob("/var/sftp/sftpuser/{}/*.dlist.zip")'.format(destination_folder)
+    files = await jujutools.remote_object('import glob;', cmd, sftp_server.units[0])
+    print(files)
+    print(type(files))
+    assert len(files) > 0
 
 
 async def test_restore(model, app, jujutools):
     # This was created during the backup test
     contents = await jujutools.file_contents('/home/ubuntu/testfile', app.units[0])
     assert "Original File" in contents
+
     # Modify the file
     results = await jujutools.run_command('echo "Modified File" > /home/ubuntu/testfile',
                                           app.units[0])
     assert results['Code'] == '0'
     contents = await jujutools.file_contents('/home/ubuntu/testfile', app.units[0])
     assert "Modified File" in contents
+
+    # Restore the file
+    action = await app.units[0].run_action('restore')
+    action = await action.wait()
+    assert action.status == 'completed'
+    assert action.results['outcome'] == 'success'
+    contents = await jujutools.file_contents('/home/ubuntu/testfile', app.units[0])
+    assert "Original File" in contents
+
+
+async def test_cross_charm_restore(model, app, jujutools, series):
+    # This was created during the backup test
+    contents = await jujutools.file_contents('/home/ubuntu/testfile', app.units[0])
+    assert "Original File" in contents
+
+    # Modify the file
+    results = await jujutools.run_command('echo "Modified File" > /home/ubuntu/testfile',
+                                          app.units[0])
+    assert results['Code'] == '0'
+    contents = await jujutools.file_contents('/home/ubuntu/testfile', app.units[0])
+    assert "Modified File" in contents
+
+    # Configure for cross-charm restore
+    sftp_server = model.applications['sftp-server']
+    public_address = sftp_server.units[0].public_address
+    destination_folder = '/tmp/{}'.format(app.name)
+    if series == 'xenial':
+        destination_folder = destination_folder.replace(series, 'bionic')
+    else:
+        destination_folder = destination_folder.replace(series, 'xenial')
+    config = {'storage-url': 'ssh://sftpuser:testpass@{}{}'.format(public_address,
+                                                                   destination_folder),
+              'source-path': '/home/ubuntu/',
+              'options': '--ssh-accept-any-fingerprints',
+              }
+    await app.set_config(config)
+
     # Restore the file
     action = await app.units[0].run_action('restore')
     action = await action.wait()
