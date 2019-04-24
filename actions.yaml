@@ -2,3 +2,5 @@ backup:
   description: Run a backup of the settings
 restore:
   description: Restore previously backed up settings
+repair:
+  description: Repair local backup database from backup location

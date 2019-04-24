@@ -47,9 +47,10 @@ async def model(controller):
     _model = await controller.add_model(model_name,
                                         cloud_name=os.getenv('PYTEST_CLOUD_NAME'),
                                         region=os.getenv('PYTEST_CLOUD_REGION'),
+                                        config={'logging-config': "<root>=DEBUG"},
                                         )
     # https://github.com/juju/python-libjuju/issues/267
-    subprocess.check_call(['juju', 'models'])
+    subprocess.check_call(['juju', 'list-models'])
     while model_name not in await controller.list_models():
         await asyncio.sleep(1)
     yield _model

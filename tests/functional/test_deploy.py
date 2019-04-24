@@ -168,6 +168,14 @@ async def test_restore(model, app, jujutools):
     assert "Original File" in contents
 
 
+async def test_repair(model, app, jujutools):
+    # Restore the file
+    action = await app.units[0].run_action('repair')
+    action = await action.wait()
+    assert action.status == 'completed'
+    assert action.results['outcome'] == 'success'
+
+
 async def test_cross_charm_restore(model, app, jujutools, series):
     # This was created during the backup test
     contents = await jujutools.file_contents('/home/ubuntu/testfile', app.units[0])

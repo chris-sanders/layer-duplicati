@@ -1,0 +1,11 @@
+#!/usr/local/sbin/charm-env python3
+
+from libdup import DuplicatiHelper
+from charmhelpers.core import hookenv
+
+dh = DuplicatiHelper()
+
+if dh.repair():
+    hookenv.action_set({'outcome': 'success'})
+else:
+    hookenv.action_set({'outcome': 'failed'})

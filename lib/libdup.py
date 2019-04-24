@@ -44,47 +44,35 @@ class DuplicatiHelper():
                 return asset.browser_download_url
         return None
 
-    def backup(self):
+    def run_cli(self, operation, options=[]):
         cmd = [self.cli,
-               'backup',
+               operation,
                self.charm_config['storage-url']]
-        cmd.extend([path for path in self.charm_config['source-path'].split(',')])
+        if operation in ['backup', 'restore']:
+            cmd.extend([path for path in self.charm_config['source-path'].split(',')])
         if self.charm_config['passphrase']:
             cmd.append('--passphrase={}'.format(self.charm_config['passphrase']))
         else:
             cmd.append('--no-encryption')
         cmd.extend([option for option in self.charm_config['options'].split(',')])
+        cmd.extend([option for option in options])
         try:
             output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
             hookenv.log(output)
         except subprocess.CalledProcessError as ex:
-            if "Backup completed successfully" in output.decode('utf8'):
+            if "Backup completed successfully" in ex.output.decode('utf8'):
                 return True  # Return code 0 on success with no changes
-            hookenv.log('Backup process failed')
-            hookenv.log('Backup command:{}'.format(cmd))
-            hookenv.log(ex.output.decode('utf8'))
-            return False
-        if "Backup completed successfully" in output.decode('utf8'):
-            return True
-        return False
-
-    def restore(self):
-        cmd = [self.cli,
-               'restore',
-               self.charm_config['storage-url']]
-        cmd.extend([path for path in self.charm_config['source-path'].split(',')])
-        if self.charm_config['passphrase']:
-            cmd.append('--passphrase={}'.format(self.charm_config['passphrase']))
-        else:
-            cmd.append('--no-encryption')
-        cmd.append('--overwrite=true')
-        cmd.append('--restore-permissions')
-        cmd.extend([option for option in self.charm_config['options'].split(',')])
-        try:
-            output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-            hookenv.log(output)
-        except subprocess.CalledProcessError as ex:
-            hookenv.log('Restore process failed')
-            hookenv.log(ex.output.decode('utf8'))
+            hookenv.log('{} process failed'.format(operation), 'ERROR')
+            hookenv.log('{} command:{}'.format(operation, cmd), 'ERROR')
+            hookenv.log('Command Output: {}'.format(ex.output.decode('utf8')), 'ERROR')
             return False
         return True
+
+    def backup(self):
+        return self.run_cli('backup')
+
+    def restore(self):
+        return self.run_cli('restore', ['--overwrite=true', '--restore-permissions'])
+
+    def repair(self):
+        return self.run_cli('repair')
