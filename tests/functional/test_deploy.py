@@ -169,8 +169,25 @@ async def test_restore(model, app, jujutools):
 
 
 async def test_repair(model, app, jujutools):
-    # Restore the file
+    # Delete the duplicati database
+    cmd = "rm -fr /root/.config/Duplicati"
+    results = await jujutools.run_command(cmd, app.units[0])
+    assert results['Code'] == '0'
+
+    # Backup should fail
+    action = await app.units[0].run_action('backup')
+    action = await action.wait()
+    assert action.status == 'completed'
+    assert action.results['outcome'] == 'failed'
+
+    # Run a repair
     action = await app.units[0].run_action('repair')
+    action = await action.wait()
+    assert action.status == 'completed'
+    assert action.results['outcome'] == 'success'
+
+    # Backup should succeed
+    action = await app.units[0].run_action('backup')
     action = await action.wait()
     assert action.status == 'completed'
     assert action.results['outcome'] == 'success'
@@ -210,3 +227,12 @@ async def test_cross_charm_restore(model, app, jujutools, series):
     assert action.results['outcome'] == 'success'
     contents = await jujutools.file_contents('/home/ubuntu/testfile', app.units[0])
     assert "Original File" in contents
+
+    # Reset the config
+    destination_folder = '/tmp/{}'.format(app.name)
+    config = {'storage-url': 'ssh://sftpuser:testpass@{}{}'.format(public_address,
+                                                                   destination_folder),
+              'source-path': '/home/ubuntu/',
+              'options': '--ssh-accept-any-fingerprints',
+              }
+    await app.set_config(config)

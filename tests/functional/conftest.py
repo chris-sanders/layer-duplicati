@@ -50,9 +50,10 @@ async def model(controller):
                                         config={'logging-config': "<root>=DEBUG"},
                                         )
     # https://github.com/juju/python-libjuju/issues/267
+    await asyncio.sleep(5)
     subprocess.check_call(['juju', 'list-models'])
     while model_name not in await controller.list_models():
-        await asyncio.sleep(1)
+        await asyncio.sleep(5)
     yield _model
     await _model.disconnect()
     if not os.getenv('PYTEST_KEEP_MODEL'):
