@@ -11,7 +11,8 @@ class DuplicatiHelper():
     def __init__(self):
         self.charm_config = hookenv.config()
         self.config_file = "/etc/default/duplicati"
-        self.service = 'duplicati.service'
+        self.service = 'duplicati-charm.service'
+        self.service_file = '/lib/systemd/system/duplicati-charm.service'
 
     def write_config(self):
         options = []

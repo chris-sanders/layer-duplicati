@@ -11,12 +11,13 @@ from charms.reactive import (
     endpoint_from_name,
 )
 from charmhelpers import fetch
-from charmhelpers.core import hookenv
+from charmhelpers.core import hookenv, templating
 from libdup import DuplicatiHelper
 
 dh = DuplicatiHelper()
 
 
+@when('layer-service-account.configured')
 @when_not('duplicati.installed')
 def install_duplicati():
     hookenv.status_set('maintenance', 'installing mono')
@@ -46,6 +47,7 @@ def install_duplicati():
     hookenv.log('Installing duplicati', 'INFO')
     hookenv.status_set('maintenance', 'installing duplicati')
     fetch.apt_install(fullpath)
+    templating.render(dh.service, dh.service_file, context={})
     subprocess.check_call(['systemctl', 'enable', dh.service])
     dh.write_config()
     hookenv.status_set('active', 'Duplicati is ready')

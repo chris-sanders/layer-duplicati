@@ -1,8 +1,16 @@
 includes:
   - layer:basic
   - layer:version
+  - layer:service-account
   - interface:reverseproxy
 options:
   version:
     file_name: "repo-info"
+  service-account:
+    users:
+      - 'duplicati'
+    groups:
+      - 'duplicati'
+    membership:
+      - 'duplicati': ['duplicati']
 repo: git@github.com:chris-sanders/layer-duplicati.git

@@ -19,7 +19,7 @@ lint:
 	@echo "Running flake8"
 	@tox -e lint
 
-test: unittest functional lint
+test: unittest functional
 
 unittest:
 	@tox -e unit
