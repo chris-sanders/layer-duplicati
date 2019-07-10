@@ -13,6 +13,7 @@ class DuplicatiHelper():
         self.config_file = "/etc/default/duplicati"
         self.service = 'duplicati-charm.service'
         self.service_file = '/lib/systemd/system/duplicati-charm.service'
+        self.data_dir = '/home/duplicati'
 
     def write_config(self):
         options = []
